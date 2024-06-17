@@ -30,7 +30,7 @@ const ALPHABET = [
 const WIDTH = 13;
 const HEIGHT = 13;
 
-const ANSWER = ["APPLE", "BANANA", "KIWI", "ABCDEF"];
+const ANSWER = ["APPLE", "BANANA", "KIWI", "ORANGE", "BEER", "SOJU"];
 
 const DIRECTION = [
   [0, 1], //아래
@@ -43,9 +43,11 @@ const DIRECTION = [
   [-1, 1], //왼쪽아래
 ];
 
+let interval;
+
 const display_board = () => {
   //보드 세팅
-
+  const board_wrapper = document.createElement("div");
   const main = document.querySelector("main");
   for (let i = 0; i < HEIGHT; i++) {
     const row = document.createElement("div");
@@ -65,8 +67,11 @@ const display_board = () => {
       board.style.userSelect = "none"; //드래그 할때 텍스트 블록처리 막기
       row.appendChild(board);
     }
-    main.appendChild(row);
+    board_wrapper.appendChild(row);
+    main.appendChild(board_wrapper);
   }
+  set_answer_list();
+  set_timer();
   fill_answer();
 };
 
@@ -129,6 +134,41 @@ const check_available = (answer, cur_dir, board_X, board_Y) => {
     }
     return true;
   }
+};
+
+const set_answer_list = () => {
+  const list = document.createElement("div");
+  list.innerText = "ANSWER LIST";
+  const main = document.querySelector("main");
+  for (let i = 0; i < ANSWER.length; i++) {
+    const div = document.createElement("div");
+    div.innerText = ANSWER[i];
+    list.appendChild(div);
+  }
+  list.style.marginLeft = "50px";
+  main.appendChild(list);
+};
+
+const set_timer = () => {
+  const startTime = new Date();
+  const header = document.querySelector("header");
+  const timerDiv = document.createElement("div");
+  timerDiv.innerText = "time 00:00";
+  function setTime() {
+    const curTime = new Date();
+    const timer = new Date(curTime - startTime);
+    const min = timer.getMinutes().toString().padStart(2, "0");
+    const sec = timer.getSeconds().toString().padStart(2, "0");
+
+    timerDiv.innerText = "time " + `${min}:${sec}`;
+    timerDiv.style.marginLeft = "50px";
+    header.appendChild(timerDiv);
+  }
+  interval = setInterval(setTime, 1000);
+};
+
+const gameOver = () => {
+  clearInterval(interval);
 };
 
 display_board();
