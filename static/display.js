@@ -27,10 +27,10 @@ const ALPHABET = [
   "Z",
 ];
 
-const WIDTH = 13;
-const HEIGHT = 13;
+const WIDTH = 10;
+const HEIGHT = 10;
 
-const ANSWER = ["APPLE", "BANANA", "KIWI", "ORANGE", "BEER", "SOJU"];
+export const ANSWER = ["APPLE", "BANANA", "KIWI", "ORANGE", "BEER", "SOJU"];
 
 const DIRECTION = [
   [0, 1], //아래
@@ -46,8 +46,10 @@ const DIRECTION = [
 let interval;
 
 const display_board = () => {
+  set_answer_list();
   //보드 세팅
   const board_wrapper = document.createElement("div");
+  board_wrapper.id = "board_wrapper";
   const main = document.querySelector("main");
   for (let i = 0; i < HEIGHT; i++) {
     const row = document.createElement("div");
@@ -56,6 +58,8 @@ const display_board = () => {
     for (let j = 0; j < WIDTH; j++) {
       const board = document.createElement("div");
       board.id = `board[${i}][${j}]`;
+      board.setAttribute("data-row", i);
+      board.setAttribute("data-col", j);
       board.className = `board`;
       board.style.width = "50px";
       board.style.height = "50px";
@@ -70,8 +74,9 @@ const display_board = () => {
     board_wrapper.appendChild(row);
     main.appendChild(board_wrapper);
   }
-  set_answer_list();
+
   set_timer();
+  //get_answer() 구현 예정. 서버로부터 정답 받아오기
   fill_answer();
 };
 
@@ -85,10 +90,6 @@ const fill_answer = () => {
       board_Y = Math.floor(Math.random() * HEIGHT);
       if (check_available(ANSWER[i], cur_dir, board_X, board_Y)) break;
     }
-
-    const start_board = document.getElementById(
-      `board[${board_X}][${board_Y}]`
-    ); //시작점 보드
 
     for (let j = 0; j < ANSWER[i].length; j++) {
       const cur_board = document.getElementById(
@@ -139,21 +140,21 @@ const check_available = (answer, cur_dir, board_X, board_Y) => {
 const set_answer_list = () => {
   const list = document.createElement("div");
   list.innerText = "ANSWER LIST";
+  list.style.fontSize = "30px";
   const main = document.querySelector("main");
   for (let i = 0; i < ANSWER.length; i++) {
     const div = document.createElement("div");
     div.innerText = ANSWER[i];
+    div.style.fontSize = "20px";
     list.appendChild(div);
   }
-  list.style.marginLeft = "50px";
+  list.style.marginRight = "50px";
   main.appendChild(list);
 };
 
 const set_timer = () => {
   const startTime = new Date();
-  const header = document.querySelector("header");
-  const timerDiv = document.createElement("div");
-  timerDiv.innerText = "time 00:00";
+  const timerDiv = document.getElementById("timer");
   function setTime() {
     const curTime = new Date();
     const timer = new Date(curTime - startTime);
@@ -161,8 +162,6 @@ const set_timer = () => {
     const sec = timer.getSeconds().toString().padStart(2, "0");
 
     timerDiv.innerText = "time " + `${min}:${sec}`;
-    timerDiv.style.marginLeft = "50px";
-    header.appendChild(timerDiv);
   }
   interval = setInterval(setTime, 1000);
 };
@@ -173,26 +172,26 @@ const gameOver = () => {
 
 display_board();
 
-for (const div of document.querySelectorAll(".board")) {
-  mouseMove(div, function (event) {
-    // 드래그했을 때 해당 부분이 버튼이 아닐 경우에는 return
-    if (!(event.target instanceof HTMLDivElement)) return;
-    // 드래그한 커서가 버튼 위에 갈 경우 빨간색으로 표시
-    event.target.style.backgroundColor = "red";
-  });
-}
+// for (const div of document.querySelectorAll(".board")) {
+//   mouseMove(div, function (event) {
+//     // 드래그했을 때 해당 부분이 버튼이 아닐 경우에는 return
+//     if (!(event.target instanceof HTMLDivElement)) return;
+//     // 드래그한 커서가 버튼 위에 갈 경우 빨간색으로 표시
+//     event.target.style.backgroundColor = "red";
+//   });
+// }
 
-function mouseMove(target, whileMove) {
-  let endMove = function () {
-    // 마우스를 뗄 때 이벤트 리스너 제거
-    window.removeEventListener("mousemove", whileMove);
-    window.removeEventListener("mouseup", endMove);
-  };
+// function mouseMove(target, whileMove) {
+//   let endMove = function () {
+//     // 마우스를 뗄 때 이벤트 리스너 제거
+//     window.removeEventListener("mousemove", whileMove);
+//     window.removeEventListener("mouseup", endMove);
+//   };
 
-  // 마우스를 클릭한 채 움직이면 이벤트리스너 생성
-  target.addEventListener("mousedown", function (event) {
-    event.stopPropagation();
-    window.addEventListener("mousemove", whileMove);
-    window.addEventListener("mouseup", endMove);
-  });
-}
+//   // 마우스를 클릭한 채 움직이면 이벤트리스너 생성
+//   target.addEventListener("mousedown", function (event) {
+//     event.stopPropagation();
+//     window.addEventListener("mousemove", whileMove);
+//     window.addEventListener("mouseup", endMove);
+//   });
+// }
