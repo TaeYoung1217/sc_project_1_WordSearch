@@ -1,3 +1,6 @@
+import { gameStart } from "./gamestart.js";
+import { addListener } from "./playgame.js";
+
 const ALPHABET = [
   "A",
   "B",
@@ -27,10 +30,10 @@ const ALPHABET = [
   "Z",
 ];
 
-const WIDTH = 10;
-const HEIGHT = 10;
+export const WIDTH = 10;
+export const HEIGHT = 10;
 
-export const ANSWER = ["APPLE", "BANANA", "KIWI", "ORANGE", "BEER", "SOJU"];
+export let ANSWER = ["ABCDE"];
 
 const DIRECTION = [
   [0, 1], //아래
@@ -43,49 +46,101 @@ const DIRECTION = [
   [-1, 1], //왼쪽아래
 ];
 
-let interval;
+//정답 무작위로 섞기
+function shuffle(array) {
+  array.sort(() => Math.random() - 0.5);
+}
 
-const display_board = () => {
-  set_answer_list();
+export let interval; //타이머를 저장하기 위한 변수
+
+//DB에 저장된 정답단어들 가져오기
+export const getAnswerFromDB = async () => {
+  // const res = await fetch("/answers")
+  //   .then((res) => res.json())
+  //   .then((data) => {
+  //     data.forEach((obj) => {
+  //       ANSWER.push(obj.answer);
+  //     });
+  //   });
+
+  shuffle(ANSWER);
+  display_board();
+};
+
+const display_board = async () => {
   //보드 세팅
-  const board_wrapper = document.createElement("div");
-  board_wrapper.id = "board_wrapper";
-  const main = document.querySelector("main");
+
+  //--------------------------------------------------------
+  set_answer_list();
+  const board_wrapper = document.getElementById("board_wrapper");
   for (let i = 0; i < HEIGHT; i++) {
     const row = document.createElement("div");
     row.style.display = "flex";
     row.style.flexDirection = "row";
     for (let j = 0; j < WIDTH; j++) {
+      const parentBoard = document.createElement("div");
+      parentBoard.className = "parentBoard";
+
       const board = document.createElement("div");
       board.id = `board[${i}][${j}]`;
       board.setAttribute("data-row", i);
       board.setAttribute("data-col", j);
       board.className = `board`;
-      board.style.width = "50px";
-      board.style.height = "50px";
-      board.style.border = "1px solid black";
-      board.style.display = "flex";
-      board.style.justifyContent = "center";
-      board.style.alignItems = "center";
-      board.style.cursor = "pointer";
-      board.style.userSelect = "none"; //드래그 할때 텍스트 블록처리 막기
-      row.appendChild(board);
+      addListener(board);
+
+      parentBoard.appendChild(board);
+      row.appendChild(parentBoard);
     }
     board_wrapper.appendChild(row);
-    main.appendChild(board_wrapper);
   }
 
   set_timer();
-  //get_answer() 구현 예정. 서버로부터 정답 받아오기
   fill_answer();
+  set_records();
 };
 
+const set_records = async () => {
+  const res = await fetch("/records");
+  const data = await res.json();
+  let i = 1;
+  data.forEach((obj) => {
+    const records = document.getElementById("records");
+    const info = document.createElement("div");
+    const name = document.createElement("div");
+    const time = document.createElement("div");
+    name.style.fontSize = "20px";
+    name.style.width = "130px";
+    name.style.right = 0;
+    time.style.fontSize = "20px";
+    time.style.width = "1500px";
+    time.style.left = 0;
+
+    info.innerText = `${i}위 :::`;
+    info.style.fontSize = "20px";
+    info.style.display = "flex";
+    info.style.flexDirection = "row";
+    info.style.justifyContent = "space-between";
+
+    name.innerText = `이름 : ${obj.name} `;
+    time.innerText = `| 기록 : ${obj.time}`;
+
+    info.appendChild(name);
+    info.appendChild(time);
+
+    records.appendChild(info);
+    i++;
+  });
+};
+
+//정답단어 먼저 백지상태에서 채우기
 const fill_answer = () => {
   for (let i = 0; i < ANSWER.length; i++) {
     const cur_dir = DIRECTION[Math.floor(Math.random() * DIRECTION.length)]; //진행방향 설정
     let board_X = Math.floor(Math.random() * WIDTH); //시작지점 x 좌표
     let board_Y = Math.floor(Math.random() * HEIGHT); //시작지점 y 좌표
+
     while (true) {
+      //배치 가능한 시작점 찾기
       board_X = Math.floor(Math.random() * WIDTH);
       board_Y = Math.floor(Math.random() * HEIGHT);
       if (check_available(ANSWER[i], cur_dir, board_X, board_Y)) break;
@@ -96,7 +151,7 @@ const fill_answer = () => {
         `board[${board_X}][${board_Y}]`
       );
       cur_board.innerText = ANSWER[i][j];
-      cur_board.style.backgroundColor = "gray";
+      cur_board.parentElement.style.backgroundColor = "gray";
       board_X += cur_dir[0];
       board_Y += cur_dir[1];
     }
@@ -117,6 +172,7 @@ const fill_text = () => {
   }
 };
 
+//보드에 배치 가능한지 확인
 const check_available = (answer, cur_dir, board_X, board_Y) => {
   const max_x = board_X + cur_dir[0] * answer.length;
   const max_y = board_Y + cur_dir[1] * answer.length;
@@ -128,30 +184,35 @@ const check_available = (answer, cur_dir, board_X, board_Y) => {
       const cur_board = document.getElementById(
         `board[${board_X}][${board_Y}]`
       );
-      if (cur_board == null) return false;
-      if (cur_board.innerText != "") return false;
       board_X += cur_dir[0];
       board_Y += cur_dir[1];
+      if (cur_board == null) return false;
+      if (cur_board.innerText != "") {
+        if (cur_board.innerText == answer[i]) continue;
+        //다른 정답과 겹치는지 판단
+        else return false;
+      }
     }
     return true;
   }
 };
 
+//정답 단어 list 작성
 const set_answer_list = () => {
-  const list = document.createElement("div");
-  list.innerText = "ANSWER LIST";
-  list.style.fontSize = "30px";
-  const main = document.querySelector("main");
+  const list = document.getElementById("answer_list");
+
   for (let i = 0; i < ANSWER.length; i++) {
-    const div = document.createElement("div");
-    div.innerText = ANSWER[i];
-    div.style.fontSize = "20px";
-    list.appendChild(div);
+    const answer = document.createElement("div");
+    answer.id = `answer_list${i}`;
+    answer.className = "answer_list";
+    answer.innerText = ANSWER[i];
+    answer.style.fontSize = "20px";
+    answer.style.marginBottom = "5px";
+    list.appendChild(answer);
   }
-  list.style.marginRight = "50px";
-  main.appendChild(list);
 };
 
+//타이머 설정
 const set_timer = () => {
   const startTime = new Date();
   const timerDiv = document.getElementById("timer");
@@ -161,37 +222,7 @@ const set_timer = () => {
     const min = timer.getMinutes().toString().padStart(2, "0");
     const sec = timer.getSeconds().toString().padStart(2, "0");
 
-    timerDiv.innerText = "time " + `${min}:${sec}`;
+    timerDiv.innerText = `${min}:${sec}`;
   }
   interval = setInterval(setTime, 1000);
 };
-
-const gameOver = () => {
-  clearInterval(interval);
-};
-
-display_board();
-
-// for (const div of document.querySelectorAll(".board")) {
-//   mouseMove(div, function (event) {
-//     // 드래그했을 때 해당 부분이 버튼이 아닐 경우에는 return
-//     if (!(event.target instanceof HTMLDivElement)) return;
-//     // 드래그한 커서가 버튼 위에 갈 경우 빨간색으로 표시
-//     event.target.style.backgroundColor = "red";
-//   });
-// }
-
-// function mouseMove(target, whileMove) {
-//   let endMove = function () {
-//     // 마우스를 뗄 때 이벤트 리스너 제거
-//     window.removeEventListener("mousemove", whileMove);
-//     window.removeEventListener("mouseup", endMove);
-//   };
-
-//   // 마우스를 클릭한 채 움직이면 이벤트리스너 생성
-//   target.addEventListener("mousedown", function (event) {
-//     event.stopPropagation();
-//     window.addEventListener("mousemove", whileMove);
-//     window.addEventListener("mouseup", endMove);
-//   });
-// }

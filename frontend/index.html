@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="header">
+      <div id="title">Word Search</div>
+      <div id="timer" style="margin-left: 50px">00:00</div>
+    </header>
+
+    <div id="game-popup" class="popup">
+      <div class="popup-content">
+        <h2>Welcome to Word Search Game!</h2>
+        <input
+          type="text"
+          id="input_name"
+          placeholder="이름을 입력하세요"
+          required
+        />
+        <button id="start_game_button">Start Game</button>
+      </div>
+    </div>
+
+    <div id="game-over-popup" class="popup">
+      <div class="game-over-popup-content">
+        <h2>Game Over!!</h2>
+        <button id="game_over_button">Restart Game</button>
+      </div>
+    </div>
+
+    <main>
+      <div id="answer_list">ANSWER LIST</div>
+      <div id="board_wrapper"></div>
+      <div id="records">RANK BOARD</div>
+    </main>
+
+    <script type="module" src="gamestart.js"></script>
+    <script type="module" src="playgame.js"></script>
+    <script type="module" src="display.js"></script>
+  </body>
+</html>
