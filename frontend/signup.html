@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <form action="" id="signup_form">
+      <div>
+        <label for="id">ID : </label>
+        <input type="text" id="id" name="id" />
+      </div>
+
+      <div>
+        <label for="password">PW : </label>
+        <input type="password" name="password" id="password" />
+      </div>
+
+      <div>
+        <label for="passwordcheck">PWCheck : </label>
+        <input type="password" name="passwordcheck" id="passwordcheck" />
+        <div id="check_error"></div>
+      </div>
+      <button type="submit">제출</button>
+    </form>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js"></script>
+    <script src="signup.js"></script>
+  </body>
+</html>

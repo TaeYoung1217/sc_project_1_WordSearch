@@ -3,6 +3,12 @@ const gamePopup = document.getElementById("game_popup");
 const startGameButton = document.getElementById("start_game_button");
 
 export const gameStart = () => {
+  // const loginlink = document.getElementById("loginlink");
+  // loginlink.style.display = "none";
+
+  // const signuplink = document.getElementById("signuplink");
+  // signuplink.style.display = "none";
+
   startGameButton.addEventListener("click", () => {
     gamePopup.style.display = "none";
     setName();

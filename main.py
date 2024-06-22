@@ -1,9 +1,12 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Form
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.encoders import jsonable_encoder
+from fastapi_login import LoginManager
 import sqlite3  # sqlite3 모듈을 import
 from pydantic import BaseModel
+from typing import Annotated
+import json
 
 
 class RecordsData(BaseModel):
@@ -12,7 +15,14 @@ class RecordsData(BaseModel):
 
 
 class AnswerData(BaseModel):
-    answer: str
+    id:int
+    content: str
+
+
+class UserData(BaseModel):
+    id: str
+    password: str
+    
 
 
 con = sqlite3.connect("answers.db", check_same_thread=False)
@@ -31,18 +41,6 @@ app = FastAPI()
 
 @app.get("/answers")  # DB에서 정답 가져오기
 async def get_answer():
-    cur = con.cursor()
-    # DB와 상호작용하기 위한 커서 객체를 생성. 이 객체를 이용하여 DB에서 쿼리를 실행하고 결과를 가져올 수 있음
-    cur.execute(
-        f"""
-            CREATE TABLE IF NOT EXISTS answers(
-            id INTEGER PRIMARY KEY,
-            answer TEXT NOT NULL
-            )
-        """
-    )
-    con.commit()
-
     con.row_factory = sqlite3.Row
     cur = con.cursor()  # DB에 접근하기 위해 커서 객체 생성
     rows = cur.execute(
@@ -50,6 +48,15 @@ async def get_answer():
                         SELECT answer FROM answers ORDER BY RANDOM() LIMIT 5
                        """
     ).fetchall()
+    return JSONResponse(jsonable_encoder(dict(row) for row in rows))
+
+@app.get('/Allanswers')
+async def get_all_answer():
+    con.row_factory = sqlite3.Row
+    cur = con.cursor()
+    rows = cur.execute(f"""
+                SELECT id, answer FROM answers
+                """).fetchall()
     return JSONResponse(jsonable_encoder(dict(row) for row in rows))
 
 
@@ -83,7 +90,7 @@ async def get_records():
 
 @app.post("/addWords")
 async def add_words(data: AnswerData):
-    answer = data.answer
+    answer = data.content
     con.row_factory = sqlite3.Row
     cur = con.cursor()
     rows = cur.execute(
@@ -93,7 +100,86 @@ async def add_words(data: AnswerData):
                        """
     )
     con.commit()
-    print(jsonable_encoder(dict(row) for row in rows))
+    return '200'
+
+
+@app.post("/signup")
+async def signup(user:UserData):
+    try:
+        cur = con.cursor()
+        cur.execute(
+            f"""
+                CREATE TABLE IF NOT EXISTS users(
+                id TEXT PRIMARY KEY,
+                password TEXT NOT NULL
+                )
+            """
+        )
+        cur.execute(
+            f"""
+                    INSERT INTO users(id, password)
+                    VALUES (?,?)
+                    """,(user.id, user.password)
+        )
+        con.commit()
+        return "200"
+    except sqlite3.IntegrityError as e:
+        return 'duplicate id'
+    
+
+def query_user(data):
+    WHERE_STATEMENTS = f'id="{data}"'
+    if type(data) == dict:
+        WHERE_STATEMENTS = f'id="{data['id']}"'
+    con.row_factory = sqlite3.Row  # 컬럼명도 같이 가져옴
+    cur = con.cursor()
+    user = cur.execute(f"""
+                       SELECT * FROM users WHERE {WHERE_STATEMENTS}
+                       """).fetchone()
+    return user
+
+
+SECRET = '시크릿키'
+manager = LoginManager(SECRET, '/login')
+
+@app.post("/login")
+async def login(user: UserData):
+    id = user.id
+    password = user.password
+    user = query_user(id)
+    if not user:
+        return 'not user'
+    elif password != user['password']:
+        return 'invalid password'
+    else:
+        accessToken = manager.create_access_token(data={
+            'sub':{
+                'id':user['id'],
+            }
+        })
+        return accessToken
+    
+    
+@app.put('/answers/{id}')
+async def put_answer(data : AnswerData):
+    con.row_factory = sqlite3.Row
+    cur = con.cursor()
+    cur.execute(f"""
+                UPDATE answers SET answer=? WHERE id=?
+                """,(data.content.upper(), data.id))
+    con.commit()
+    return "200"
+
+@app.delete('/answers/{id}')
+async def del_answer(id):
+    con.row_factory = sqlite3.Row
+    cur = con.cursor()
+    cur.execute(f"""
+                DELETE FROM answers WHERE id=?
+                """,(id))
+    con.commit()
+    return "200"
+
 
 
 # 정적 파일 제공 (frontend 디렉토리)
