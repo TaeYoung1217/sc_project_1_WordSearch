@@ -11,6 +11,10 @@ class RecordsData(BaseModel):
     time: str
 
 
+class AnswerData(BaseModel):
+    answer: str
+
+
 con = sqlite3.connect("answers.db", check_same_thread=False)
 cur = con.cursor()
 cur.execute(
@@ -43,7 +47,7 @@ async def get_answer():
     cur = con.cursor()  # DB에 접근하기 위해 커서 객체 생성
     rows = cur.execute(
         f"""
-                        SELECT answer FROM answers
+                        SELECT answer FROM answers ORDER BY RANDOM() LIMIT 5
                        """
     ).fetchall()
     return JSONResponse(jsonable_encoder(dict(row) for row in rows))
@@ -67,7 +71,6 @@ async def post_record(data: RecordsData):
 
 @app.get("/records")
 async def get_records():
-    con = sqlite3.connect("answers.db", check_same_thread=False)
     con.row_factory = sqlite3.Row  # 컬럼명도 같이 가져오는 문법
     cur = con.cursor()
     rows = cur.execute(
@@ -76,6 +79,21 @@ async def get_records():
                 """
     ).fetchall()
     return rows
+
+
+@app.post("/addWords")
+async def add_words(data: AnswerData):
+    answer = data.answer
+    con.row_factory = sqlite3.Row
+    cur = con.cursor()
+    rows = cur.execute(
+        f"""
+                       INSERT INTO answers(answer)
+                       VALUES ('{answer}')
+                       """
+    )
+    con.commit()
+    print(jsonable_encoder(dict(row) for row in rows))
 
 
 # 정적 파일 제공 (frontend 디렉토리)

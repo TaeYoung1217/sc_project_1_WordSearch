@@ -67,7 +67,7 @@ main {
   z-index: 1000; /* 팝업을 최상위로 표시 */
 }
 
-.popup-content {
+.popup_content {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -99,7 +99,7 @@ main {
   font-size: 20px;
 }
 
-#game-over-popup {
+#game_over_popup {
   display: none;
   position: fixed;
   font-size: 30px;
@@ -111,7 +111,7 @@ main {
   z-index: 1000; /* 팝업을 최상위로 표시 */
 }
 
-.game-over-popup-content {
+.game_over_popup_content {
   position: absolute;
   top: 50%;
   left: 50%;

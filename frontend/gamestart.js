@@ -1,5 +1,5 @@
 import { getAnswerFromDB } from "./display.js";
-const gamePopup = document.getElementById("game-popup");
+const gamePopup = document.getElementById("game_popup");
 const startGameButton = document.getElementById("start_game_button");
 
 export const gameStart = () => {
@@ -17,7 +17,7 @@ export const gameStart = () => {
     const name = document.getElementById("input_name");
     const nameSetDiv = document.createElement("div");
     nameSetDiv.id = "nameSetDiv";
-    nameSetDiv.innerText = name.value;
+    nameSetDiv.innerText = `이름 : ${name.value}`;
 
     header.appendChild(nameSetDiv);
   };

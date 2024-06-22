@@ -8,12 +8,15 @@
   </head>
   <body>
     <header class="header">
+      <a href="maker.html">Word Search Maker</a>
       <div id="title">Word Search</div>
-      <div id="timer" style="margin-left: 50px">00:00</div>
+      <div id="timer" style="margin-left: 50px">time 00:00</div>
     </header>
 
-    <div id="game-popup" class="popup">
-      <div class="popup-content">
+    <div id="app"></div>
+
+    <div id="game_popup" class="popup">
+      <div class="popup_content">
         <h2>Welcome to Word Search Game!</h2>
         <input
           type="text"
@@ -25,9 +28,9 @@
       </div>
     </div>
 
-    <div id="game-over-popup" class="popup">
-      <div class="game-over-popup-content">
-        <h2>Game Over!!</h2>
+    <div id="game_over_popup" class="popup">
+      <div class="game_over_popup_content">
+        <h2 id="game_over_text">Game Over!!</h2>
         <button id="game_over_button">Restart Game</button>
       </div>
     </div>
@@ -41,5 +44,6 @@
     <script type="module" src="gamestart.js"></script>
     <script type="module" src="playgame.js"></script>
     <script type="module" src="display.js"></script>
+    <script type="module" src="gameover.js"></script>
   </body>
 </html>

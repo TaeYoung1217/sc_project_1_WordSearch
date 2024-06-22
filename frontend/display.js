@@ -1,4 +1,3 @@
-import { gameStart } from "./gamestart.js";
 import { addListener } from "./playgame.js";
 
 const ALPHABET = [
@@ -33,7 +32,7 @@ const ALPHABET = [
 export const WIDTH = 10;
 export const HEIGHT = 10;
 
-export let ANSWER = ["ABCDE"];
+export let ANSWER = [];
 
 const DIRECTION = [
   [0, 1], //아래
@@ -55,13 +54,13 @@ export let interval; //타이머를 저장하기 위한 변수
 
 //DB에 저장된 정답단어들 가져오기
 export const getAnswerFromDB = async () => {
-  // const res = await fetch("/answers")
-  //   .then((res) => res.json())
-  //   .then((data) => {
-  //     data.forEach((obj) => {
-  //       ANSWER.push(obj.answer);
-  //     });
-  //   });
+  const res = await fetch("/answers")
+    .then((res) => res.json())
+    .then((data) => {
+      data.forEach((obj) => {
+        ANSWER.push(obj.answer);
+      });
+    });
 
   shuffle(ANSWER);
   display_board();
@@ -106,26 +105,20 @@ const set_records = async () => {
   data.forEach((obj) => {
     const records = document.getElementById("records");
     const info = document.createElement("div");
-    const name = document.createElement("div");
-    const time = document.createElement("div");
-    name.style.fontSize = "20px";
-    name.style.width = "130px";
-    name.style.right = 0;
-    time.style.fontSize = "20px";
-    time.style.width = "1500px";
-    time.style.left = 0;
-
-    info.innerText = `${i}위 :::`;
     info.style.fontSize = "20px";
     info.style.display = "flex";
     info.style.flexDirection = "row";
     info.style.justifyContent = "space-between";
-
-    name.innerText = `이름 : ${obj.name} `;
-    time.innerText = `| 기록 : ${obj.time}`;
-
-    info.appendChild(name);
-    info.appendChild(time);
+    if (i == 1) {
+      info.style.color = "rgb(255,215,0)";
+      info.innerText = `🥇 ${i}위 이름 : ${obj.name} 기록 : ${obj.time}`;
+    } else if (i == 2) {
+      info.style.color = "rgb(192, 192, 192)";
+      info.innerText = `🥈 ${i}위 이름 : ${obj.name} 기록 : ${obj.time}`;
+    } else if (i == 3) {
+      info.style.color = "rgb(205, 127, 50)";
+      info.innerText = `🥉 ${i}위 이름 : ${obj.name} 기록 : ${obj.time}`;
+    } else info.innerText = `${i}위 이름 : ${obj.name} 기록 : ${obj.time}`;
 
     records.appendChild(info);
     i++;
@@ -222,7 +215,7 @@ const set_timer = () => {
     const min = timer.getMinutes().toString().padStart(2, "0");
     const sec = timer.getSeconds().toString().padStart(2, "0");
 
-    timerDiv.innerText = `${min}:${sec}`;
+    timerDiv.innerText = `time ${min}:${sec}`;
   }
   interval = setInterval(setTime, 1000);
 };
