@@ -1,35 +1,9 @@
 const wrapper = document.getElementById("wrapper");
 let ANSWER = [];
 
-const handleDelButton = async (event) => {
-  const id = event.target.dataset.id;
-  await fetch(`/answers/${id}`, {
-    method: "DELETE",
-    body: id,
-  });
-  getAsnwer();
-};
-
-const handleEditButton = async (event) => {
-  const id = event.target.dataset.id;
-  const editInput = prompt("수정할 단어를 입력하세요");
-
-  await fetch(`/answers/${id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      id: id,
-      content: editInput.toUpperCase(),
-    }),
-  });
-
-  getAsnwer();
-};
-
-const getAsnwer = async () => {
-  wrapper.innerHTML = "";
+const getAnswer = async () => {
+  //모든 정답 목록 보여주기
+  wrapper.innerHTML = ""; //화면을 밀고 새로 작성하기 위해
   const res = await fetch("/Allanswers")
     .then((res) => res.json())
     .then((data) => {
@@ -57,4 +31,34 @@ const getAsnwer = async () => {
     });
 };
 
-getAsnwer();
+const handleDelButton = async (event) => {
+  //단어 삭제 버튼 누르면
+  const id = event.target.dataset.id; //누른 단어의 아이디를 가져와서
+  await fetch(`/answers/${id}`, {
+    //서버에 id를 key로 하여 delete 요청
+    method: "DELETE",
+  });
+  getAnswer(); //삭제 후 다시 불러오기
+};
+
+const handleEditButton = async (event) => {
+  //수정버튼 누르면
+  const id = event.target.dataset.id; //단어 id 가져와서
+  const editInput = prompt("수정할 단어를 입력하세요"); //수정할 내용을 입력받고
+
+  await fetch(`/answers/${id}`, {
+    //id를 key로 하여 put 요청
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      id: id,
+      content: editInput.toUpperCase(),
+    }),
+  });
+
+  getAnswer();
+};
+
+getAnswer();
