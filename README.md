@@ -1,10 +1,10 @@
 1. Title : Word Search by TaeYoung1217
 
-2. Duration
-Started 2024. 06. 17.
+2. Duration: 
+Started 2024. 06. 17. ~ 
 Published 2024. 06. 23. 
 
-3. Description
+3. Description : 
 처음 구현한 프로젝트 입니다. 간단한 기능들이지만 처음 구현하다보니 생각보다 오랜 시간이 걸린 듯합니다.
 혹시 제 프로젝트를 보게 된다면 마음껏 수정할 부분들이나 비효율적인 부분들, 오류들에 대해 제보해주시면 반영하여 수정하도록 하겠습니다.
 감사합니다.
