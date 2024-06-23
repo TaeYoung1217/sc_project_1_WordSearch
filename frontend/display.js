@@ -1,40 +1,16 @@
 import { addListener } from "./playgame.js";
 
-const ALPHABET = [
-  "A",
-  "B",
-  "C",
-  "D",
-  "E",
-  "F",
-  "G",
-  "H",
-  "I",
-  "J",
-  "K",
-  "L",
-  "M",
-  "N",
-  "O",
-  "P",
-  "Q",
-  "R",
-  "S",
-  "T",
-  "U",
-  "V",
-  "W",
-  "X",
-  "Y",
-  "Z",
-];
+const ALPHABET = Array.from({ length: 26 }, (v, i) =>
+  String.fromCharCode(i + 65)
+); //보드 배치를 위한 알파벳 배열 생성
 
-export const WIDTH = 10;
-export const HEIGHT = 10;
+export const WIDTH = 10; //너비 설정
+export const HEIGHT = 10; //높이 설정
 
-export let ANSWER = [];
+export let ANSWER = []; //정답을 저장할 배열 선언
 
-const DIRECTION = [
+export const DIRECTION = [
+  //진행 방향 설정
   [0, 1], //아래
   [0, -1], //위
   [1, 0], //오른쪽
@@ -45,24 +21,24 @@ const DIRECTION = [
   [-1, 1], //왼쪽아래
 ];
 
-//정답 무작위로 섞기
-function shuffle(array) {
-  array.sort(() => Math.random() - 0.5);
-}
-
 export let interval; //타이머를 저장하기 위한 변수
 
 //DB에 저장된 정답단어들 가져오기
-export const getAnswerFromDB = async () => {
-  const res = await fetch("/answers")
-    .then((res) => res.json())
-    .then((data) => {
-      data.forEach((obj) => {
-        ANSWER.push(obj.answer);
-      });
-    });
+export const getAnswerFromDB = async (accessToken) => {
+  const res = await fetch("/answers", {
+    //서버에 get 요청, accessToken을 담아서
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
 
-  shuffle(ANSWER);
+  const data = await res.json();
+
+  data.forEach(async (obj) => {
+    //DB에서 받아온 answer들을 ANSWER 변수에 저장
+    ANSWER.push(obj.answer);
+  });
+
   display_board();
 };
 
@@ -70,7 +46,7 @@ const display_board = async () => {
   //보드 세팅
 
   //--------------------------------------------------------
-  set_answer_list();
+  set_answer_list(); //보드 옆에 정답 목록 표시
   const board_wrapper = document.getElementById("board_wrapper");
   for (let i = 0; i < HEIGHT; i++) {
     const row = document.createElement("div");
@@ -81,7 +57,7 @@ const display_board = async () => {
       parentBoard.className = "parentBoard";
 
       const board = document.createElement("div");
-      board.id = `board[${i}][${j}]`;
+      board.id = `board[${i}][${j}]`; //보드를 맵처럼 사용하기 위해 id 설정
       board.setAttribute("data-row", i);
       board.setAttribute("data-col", j);
       board.className = `board`;
@@ -99,7 +75,8 @@ const display_board = async () => {
 };
 
 const set_records = async () => {
-  const res = await fetch("/records");
+  //DB에 있는 기록 가져와서 rankboard에 세팅
+  const res = await fetch("/records"); //recodrs 엔드포인트로 서버에 get 요청
   const data = await res.json();
   let i = 1;
   data.forEach((obj) => {
@@ -110,6 +87,7 @@ const set_records = async () => {
     info.style.flexDirection = "row";
     info.style.justifyContent = "space-between";
     if (i == 1) {
+      //1,2,3위 강조표시
       info.style.color = "rgb(255,215,0)";
       info.innerText = `🥇 ${i}위 이름 : ${obj.name} 기록 : ${obj.time}`;
     } else if (i == 2) {
@@ -158,6 +136,7 @@ const fill_text = () => {
     for (let j = 0; j < WIDTH; j++) {
       const board_text = document.getElementById(`board[${i}][${j}]`);
       if (board_text.innerText == "") {
+        //정답먼저 채워진 보드에서 빈칸인지 체크 후 랜덤알파벳 채우기
         board_text.innerText =
           ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
       }
@@ -167,13 +146,16 @@ const fill_text = () => {
 
 //보드에 배치 가능한지 확인
 const check_available = (answer, cur_dir, board_X, board_Y) => {
-  const max_x = board_X + cur_dir[0] * answer.length;
-  const max_y = board_Y + cur_dir[1] * answer.length;
+  const max_x = board_X + cur_dir[0] * answer.length; //진행 방향으로 최대 가로
+  const max_y = board_Y + cur_dir[1] * answer.length; //진행 방향으로 최대 세로
 
-  if (max_x < 0 || max_x > WIDTH) return false;
-  else if (max_y < 0 || max_y > HEIGHT) return false;
+  if (max_x < 0 || max_x > WIDTH)
+    return false; //최소, 최대 너비 넘어가면 false return
+  else if (max_y < 0 || max_y > HEIGHT)
+    return false; //최소, 최대 높이 넘어가면 false return
   else {
     for (let i = 0; i < answer.length; i++) {
+      //시작점에서부터 진행방향쪽으로 보드를 하나씩 가져와 유효한지 확인
       const cur_board = document.getElementById(
         `board[${board_X}][${board_Y}]`
       );
@@ -192,7 +174,7 @@ const check_available = (answer, cur_dir, board_X, board_Y) => {
 
 //정답 단어 list 작성
 const set_answer_list = () => {
-  const list = document.getElementById("answer_list");
+  const list = document.getElementById("answer_list"); //DB에서 가져온 ANSWER 변수를 메인화면에 세팅
 
   for (let i = 0; i < ANSWER.length; i++) {
     const answer = document.createElement("div");
@@ -217,5 +199,5 @@ const set_timer = () => {
 
     timerDiv.innerText = `time ${min}:${sec}`;
   }
-  interval = setInterval(setTime, 1000);
+  interval = setInterval(setTime, 1000); //game over 처리를 하기 위해 interval 변수에 저장
 };
