@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Form
+from fastapi import FastAPI, HTTPException, Form,Depends
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.encoders import jsonable_encoder
@@ -9,38 +9,71 @@ from typing import Annotated
 import json
 
 
-class RecordsData(BaseModel):
+class RecordsData(BaseModel): #기록관리를 위한 basemodel
     name: str
     time: str
 
 
-class AnswerData(BaseModel):
+class AnswerData(BaseModel): #정답 관리를 위한 모델
     id:int
     content: str
+    
+class AddData(BaseModel): #maker에서 단어 추가할때 필요한 모델
+    content :str
 
 
-class UserData(BaseModel):
+class UserData(BaseModel): #회원가입할때 유저정보 저장할 모델
     id: str
     password: str
     
 
+SECRET = '시크릿키'
+manager = LoginManager(SECRET, '/login') #로그인 매니저 생성
 
-con = sqlite3.connect("answers.db", check_same_thread=False)
+@manager.user_loader() #유저로더 정의 및 
+def query_user(data):
+    WHERE_STATEMENTS = f'id="{data}"'
+    if type(data) == dict:
+        WHERE_STATEMENTS = f'id="{data['id']}"'
+    con.row_factory = sqlite3.Row  # 컬럼명도 같이 가져옴
+    cur = con.cursor()
+    user = cur.execute(f"""
+                       SELECT * FROM users WHERE {WHERE_STATEMENTS}
+                       """).fetchone()
+    return user
+
+
+con = sqlite3.connect("word_search.db", check_same_thread=False)
 cur = con.cursor()
 cur.execute(
     f"""
                 CREATE TABLE IF NOT EXISTS records(
-                id INTEGER PRIMARY KEY,
-                name TEXT NOT NULL,
+                id TEXT PRIMARY KEY,
                 time TEXT NOT NULL)
                 """
 )
+cur.execute(
+    f"""
+                CREATE TABLE IF NOT EXISTS answers(
+                id INTEGER PRIMARY KEY,
+                answer TEXT UNIQUE NOT NULL)
+                """
+)
+cur.execute(
+            f"""
+                CREATE TABLE IF NOT EXISTS users(
+                id TEXT PRIMARY KEY,
+                password TEXT NOT NULL
+                )
+            """
+        )
+con.commit()
 
 app = FastAPI()
 
 
 @app.get("/answers")  # DB에서 정답 가져오기
-async def get_answer():
+async def get_answer(user=Depends(manager)):
     con.row_factory = sqlite3.Row
     cur = con.cursor()  # DB에 접근하기 위해 커서 객체 생성
     rows = cur.execute(
@@ -87,17 +120,27 @@ async def get_records():
     ).fetchall()
     return rows
 
-
-@app.post("/addWords")
-async def add_words(data: AnswerData):
-    answer = data.content
-    con.row_factory = sqlite3.Row
+@app.get("/Allrecords")
+async def get_records():
+    con.row_factory = sqlite3.Row  # 컬럼명도 같이 가져오는 문법
     cur = con.cursor()
     rows = cur.execute(
         f"""
-                       INSERT INTO answers(answer)
-                       VALUES ('{answer}')
-                       """
+                SELECT * FROM records ORDER BY time ASC
+                """
+    ).fetchall()
+    return rows
+
+@app.post("/addWords")
+async def add_words(data:AddData):
+    answer = data.content
+    con.row_factory = sqlite3.Row
+    cur = con.cursor()
+    cur.execute(
+        f"""
+                       INSERT OR IGNORE INTO answers(answer)
+                       VALUES (?)
+                       """,(answer.upper(),)
     )
     con.commit()
     return '200'
@@ -107,14 +150,6 @@ async def add_words(data: AnswerData):
 async def signup(user:UserData):
     try:
         cur = con.cursor()
-        cur.execute(
-            f"""
-                CREATE TABLE IF NOT EXISTS users(
-                id TEXT PRIMARY KEY,
-                password TEXT NOT NULL
-                )
-            """
-        )
         cur.execute(
             f"""
                     INSERT INTO users(id, password)
@@ -127,20 +162,6 @@ async def signup(user:UserData):
         return 'duplicate id'
     
 
-def query_user(data):
-    WHERE_STATEMENTS = f'id="{data}"'
-    if type(data) == dict:
-        WHERE_STATEMENTS = f'id="{data['id']}"'
-    con.row_factory = sqlite3.Row  # 컬럼명도 같이 가져옴
-    cur = con.cursor()
-    user = cur.execute(f"""
-                       SELECT * FROM users WHERE {WHERE_STATEMENTS}
-                       """).fetchone()
-    return user
-
-
-SECRET = '시크릿키'
-manager = LoginManager(SECRET, '/login')
 
 @app.post("/login")
 async def login(user: UserData):
@@ -171,14 +192,12 @@ async def put_answer(data : AnswerData):
     return "200"
 
 @app.delete('/answers/{id}')
-async def del_answer(id):
+async def del_answer(id: int):
     con.row_factory = sqlite3.Row
     cur = con.cursor()
-    cur.execute(f"""
-                DELETE FROM answers WHERE id=?
-                """,(id))
+    cur.execute("DELETE FROM answers WHERE id=?", (id,))
     con.commit()
-    return "200"
+    return {"status": "200"}
 
 
 
