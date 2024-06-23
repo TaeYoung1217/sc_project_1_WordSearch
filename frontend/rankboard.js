@@ -1,5 +1,5 @@
 const get_records = async () => {
-  const res = await fetch("/records");
+  const res = await fetch("/Allrecords"); //서버에 기록을 get 요청으로 받아와서 표시
   const data = await res.json();
   let i = 1;
   data.forEach((obj) => {
