@@ -8,29 +8,28 @@
   </head>
   <body>
     <header class="header">
-      <a href="maker.html">Word Search Maker</a>
       <div id="title">Word Search</div>
       <div id="timer" style="margin-left: 50px">time 00:00</div>
+      <div id="nameSetDiv"></div>
+      <button id="logout_button" style="margin-right: 10px"></button>
     </header>
 
     <div id="app"></div>
 
     <div id="game_popup" class="popup">
       <div class="popup_content">
-        <h2>Welcome to<br />Word Search Game!</h2>
+        <h2 style="margin-bottom: 0">Welcome to<br />Word Search Game!</h2>
+        <div id="user_name_display"></div>
         <div style="font-size: 20px">
-          <a href="login.html" id="loginlink">로그인하기</a>
-          <a href="signup.html" id="signuplink">회원가입하기</a>
-          <a href="rankboard.html">랭킹확인하기</a>
-          <a href="getAnswer.html">단어목록보기</a>
+          <a href="login.html" id="loginlink">로그인하기</a><br />
+          <a href="signup.html" id="signuplink">회원가입하기</a><br />
+          <a href="rankboard.html">랭킹확인하기</a><br />
+          <a href="getAnswer.html">단어목록보기</a><br />
+          <a href="maker.html">Word Search Maker</a><br />
+          <button id="start_button" style="border: none; font-size: medium">
+            게임 시작하기
+          </button>
         </div>
-        <input
-          type="text"
-          id="input_name"
-          placeholder="이름을 입력하세요"
-          required
-        />
-        <button id="start_game_button">Start Game</button>
       </div>
     </div>
 
@@ -51,5 +50,6 @@
     <script type="module" src="playgame.js"></script>
     <script type="module" src="display.js"></script>
     <script type="module" src="gameover.js"></script>
+    <script type="module" src="logout.js"></script>
   </body>
 </html>
