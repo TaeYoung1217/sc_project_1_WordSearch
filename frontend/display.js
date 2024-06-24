@@ -122,7 +122,6 @@ const fill_answer = () => {
         `board[${board_X}][${board_Y}]`
       );
       cur_board.innerText = ANSWER[i][j];
-      cur_board.parentElement.style.backgroundColor = "gray";
       board_X += cur_dir[0];
       board_Y += cur_dir[1];
     }
