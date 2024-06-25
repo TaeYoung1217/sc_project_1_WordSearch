@@ -14,9 +14,9 @@ const loginCheck = async (event) => {
   if (accessToken) {
     //로그인시 토큰을 로컬스토리지에 저장하기때문에 토큰이 있으면 로그인된 것으로 판단
     alert("이미 로그인 되어 있습니다");
-    window.location.pathname = "/index.html"; //로그인 되어있으면 홈화면으로 이동
+    window.location.pathname = "./index.html"; //로그인 되어있으면 홈화면으로 이동
   } else {
-    window.location.pathname = "/login.html"; //로그인 안되어있으면 로그인화면으로 이동
+    window.location.pathname = "./html/login.html"; //로그인 안되어있으면 로그인화면으로 이동
   }
 };
 
@@ -33,7 +33,7 @@ const isLogin = async () => {
   if (res.status === 401) {
     //Unauthorized 오류 발생시
     alert("로그인이 필요합니다");
-    window.location.pathname = "/login.html";
+    window.location.pathname = "./html/login.html";
     return;
   } else if (res.status === 200) {
     //로그인 성공시
