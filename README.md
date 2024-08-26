@@ -1,3 +1,6 @@
+#시연 영상
+![word_search](https://github.com/user-attachments/assets/1f1c9228-eb8b-47f3-b051-72b6523c8f38)
+
 1. Title : Word Search by TaeYoung1217
 
 2. Duration: 
